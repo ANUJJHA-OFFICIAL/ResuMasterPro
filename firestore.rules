@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: profiles
+    // Document ID: {uid} (Matches Firebase Auth UID)
+    // Fields:
+    //   - uid: string (required)
+    //   - personalInfo: object (required)
+    //     - fullName: string (required)
+    //     - email: string (required, email format)
+    //     - phone: string
+    //     - dob: string
+    //     - gender: string
+    //     - nationality: string
+    //     - address: string
+    //     - city: string
+    //     - state: string
+    //     - country: string
+    //     - pincode: string
+    //     - linkedin: string
+    //     - github: string
+    //     - portfolio: string
+    //     - profilePic: string
+    //     - coverPic: string
+    //   - education: array of objects
+    //   - experience: array of objects
+    //   - skills: object
+    //   - projects: array of objects
+    //   - leadership: array of objects
+    //   - awards: array of objects
+    //   - achievements: array of objects
+    //   - additional: object
+    //   - completionPercentage: number
+    //
+    // Collection: resumes
+    // Document ID: {resumeId}
+    // Fields:
+    //   - id: string (required)
+    //   - userId: string (required, matches owner UID)
+    //   - title: string (required)
+    //   - role: string (required)
+    //   - template: string (required)
+    //   - type: string (required, enum)
+    //   - data: object (required, UserProfile schema)
+    //   - createdAt: number (required)
+    //   - updatedAt: number (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidProfile(data) {
+      return data.uid is string && data.uid.size() > 0 &&
+             data.personalInfo is map &&
+             data.personalInfo.fullName is string && data.personalInfo.fullName.size() > 0 &&
+             data.personalInfo.fullName.size() < 100 &&
+             isValidEmail(data.personalInfo.email) &&
+             (data.completionPercentage is number);
+    }
+
+    function isValidResume(data) {
+      return data.id is string && data.id.size() > 0 &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.role is string && data.role.size() > 0 &&
+             data.template is string &&
+             data.type in ['chronological', 'functional', 'combination'] &&
+             data.data is map &&
+             data.createdAt is number &&
+             data.updatedAt is number;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /profiles/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && isValidProfile(request.resource.data);
+      allow update: if isOwner(uid) && isValidProfile(request.resource.data);
+      allow delete: if isOwner(uid);
+    }
+
+    match /resumes/{resumeId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid && 
+                      isValidResume(request.resource.data);
+      allow update: if isDocOwner() && 
+                      request.resource.data.userId == resource.data.userId &&
+                      isValidResume(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    // Default deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

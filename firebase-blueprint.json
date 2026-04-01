@@ -1,0 +1,190 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "The complete professional profile of a user.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "personalInfo": {
+          "type": "object",
+          "properties": {
+            "fullName": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "phone": { "type": "string" },
+            "dob": { "type": "string" },
+            "gender": { "type": "string" },
+            "nationality": { "type": "string" },
+            "address": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string" },
+            "country": { "type": "string" },
+            "pincode": { "type": "string" },
+            "linkedin": { "type": "string" },
+            "github": { "type": "string" },
+            "portfolio": { "type": "string" },
+            "profilePic": { "type": "string" },
+            "coverPic": { "type": "string" }
+          },
+          "required": ["fullName", "email"]
+        },
+        "education": {
+          "type": "array",
+          "items": { "$ref": "Education" }
+        },
+        "experience": {
+          "type": "array",
+          "items": { "$ref": "Experience" }
+        },
+        "skills": {
+          "type": "object",
+          "properties": {
+            "technical": { "type": "array", "items": { "type": "string" } },
+            "soft": { "type": "array", "items": { "type": "string" } },
+            "tools": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "projects": {
+          "type": "array",
+          "items": { "$ref": "Project" }
+        },
+        "leadership": {
+          "type": "array",
+          "items": { "$ref": "Leadership" }
+        },
+        "awards": {
+          "type": "array",
+          "items": { "$ref": "Award" }
+        },
+        "achievements": {
+          "type": "array",
+          "items": { "$ref": "Achievement" }
+        },
+        "additional": {
+          "type": "object",
+          "properties": {
+            "certifications": { "type": "array", "items": { "type": "string" } },
+            "publications": { "type": "array", "items": { "type": "string" } },
+            "languages": { "type": "array", "items": { "type": "string" } },
+            "hobbies": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "completionPercentage": { "type": "number" }
+      },
+      "required": ["uid", "personalInfo"]
+    },
+    "Education": {
+      "title": "Education",
+      "description": "Educational background entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "institution": { "type": "string" },
+        "degree": { "type": "string" },
+        "field": { "type": "string" },
+        "startYear": { "type": "string" },
+        "endYear": { "type": "string" },
+        "grade": { "type": "string" },
+        "achievements": { "type": "string" }
+      }
+    },
+    "Experience": {
+      "title": "Experience",
+      "description": "Professional experience entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "company": { "type": "string" },
+        "position": { "type": "string" },
+        "location": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "isCurrent": { "type": "boolean" },
+        "description": { "type": "string" },
+        "department": { "type": "string" }
+      }
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Project entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "role": { "type": "string" },
+        "techStack": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": "string" },
+        "links": {
+          "type": "object",
+          "properties": {
+            "demo": { "type": "string" },
+            "github": { "type": "string" }
+          }
+        }
+      }
+    },
+    "Leadership": {
+      "title": "Leadership",
+      "description": "Leadership role entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "role": { "type": "string" },
+        "organization": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "Award": {
+      "title": "Award",
+      "description": "Award or recognition entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "issuer": { "type": "string" },
+        "date": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "Achievement": {
+      "title": "Achievement",
+      "description": "Achievement entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "organization": { "type": "string" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["hackathon", "quiz", "competition", "participation", "other"] }
+      }
+    },
+    "Resume": {
+      "title": "Resume",
+      "description": "A generated resume document.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "role": { "type": "string" },
+        "template": { "type": "string" },
+        "type": { "type": "string", "enum": ["chronological", "functional", "combination"] },
+        "data": { "$ref": "UserProfile" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "userId", "title", "role", "template", "type", "data", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/profiles/{uid}": {
+      "schema": "UserProfile",
+      "description": "User professional profiles."
+    },
+    "/resumes/{resumeId}": {
+      "schema": "Resume",
+      "description": "Saved resumes for users."
+    }
+  }
+}

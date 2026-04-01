@@ -1,0 +1,5 @@
+{
+  "name": "ResuMasterPro",
+  "description": "A premium, ATS-friendly full-stack resume builder with smart role-based highlighting and real-time preview.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"]
+}
